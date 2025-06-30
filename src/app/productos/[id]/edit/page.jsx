@@ -6,18 +6,36 @@ import { FaEdit, FaTag, FaDollarSign, FaBoxes } from 'react-icons/fa';
 
 export default function EditarProducto() {
   const [producto, setProducto] = useState({ nombre: '', precio: '', stock: '', categoriaId: '' });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const router = useRouter();
   const params = useParams();
   const id = params.id;
 
   useEffect(() => {
-    if (id) getProducto(id).then(setProducto);
+    if (id) {
+      getProducto(id)
+        .then(setProducto)
+        .catch(() => setError('No se pudo cargar el producto. Intenta nuevamente.'));
+    }
   }, [id]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await actualizarProducto(id, producto);
-    router.push('/productos');
+    setError('');
+    // Validaciones básicas antes de enviar
+    if (!producto.nombre || !producto.precio || !producto.stock || !producto.categoriaId) {
+      setError('Todos los campos son obligatorios');
+      return;
+    }
+    setLoading(true);
+    try {
+      await actualizarProducto(id, producto);
+      router.push('/productos');
+    } catch (err) {
+      setError('Error al actualizar producto. Verifica los datos o conexión.');
+      setLoading(false);
+    }
   };
 
   return (
@@ -39,6 +57,11 @@ export default function EditarProducto() {
         </p>
       </div>
       <form onSubmit={handleSubmit} className="space-y-6">
+        {error && (
+          <div className="text-red-600 bg-red-50 border border-red-200 rounded p-2 text-center text-sm">
+            {error}
+          </div>
+        )}
         <FormField
           label="Nombre del Producto"
           icon={<FaTag className="text-red-500" />}
@@ -83,14 +106,16 @@ export default function EditarProducto() {
             type="button"
             onClick={() => router.push('/productos')}
             className="px-4 py-2 border border-blue-200 rounded-lg text-blue-700 hover:bg-blue-50 transition-colors"
+            disabled={loading}
           >
             Cancelar
           </button>
           <button
             type="submit"
             className="px-6 py-2 bg-gradient-to-r from-red-700 via-blue-700 to-red-600 text-white rounded-lg shadow-md hover:from-red-800 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transition-colors border-2 border-blue-800"
+            disabled={loading}
           >
-            Actualizar Producto
+            {loading ? 'Actualizando...' : 'Actualizar Producto'}
           </button>
         </div>
       </form>

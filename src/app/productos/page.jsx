@@ -9,13 +9,16 @@ import {
 export default function ProductosPage() {
   const [productos, setProductos] = useState([]);
   const [busqueda, setBusqueda] = useState('');
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => { cargarProductos(); }, []);
 
   const cargarProductos = async () => {
+    setLoading(true);
     const data = await getProductos();
     setProductos(data);
+    setLoading(false);
   };
 
   const eliminar = async (id) => {
@@ -68,7 +71,7 @@ export default function ProductosPage() {
             />
           </div>
         </div>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto min-h-[120px]">
           <table className="min-w-full">
             <thead className="bg-blue-50 border-b">
               <tr>
@@ -76,81 +79,88 @@ export default function ProductosPage() {
                 <th className="px-3 py-3 text-left text-xs font-extrabold text-blue-800 uppercase tracking-wider">Producto</th>
                 <th className="px-3 py-3 text-center text-xs font-extrabold text-blue-800 uppercase tracking-wider w-20">Precio</th>
                 <th className="px-3 py-3 text-center text-xs font-extrabold text-blue-800 uppercase tracking-wider w-16">Stock</th>
-                <th className="px-3 py-3 text-center text-xs font-extrabold text-blue-800 uppercase tracking-wider w-20">Categoría</th>
+                <th className="px-3 py-3 text-center text-xs font-extrabold text-blue-800 uppercase tracking-wider w-28">Categoría</th>
                 <th className="px-3 py-3 text-center text-xs font-extrabold text-blue-800 uppercase tracking-wider w-20">Acciones</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-blue-50">
-              {productosFiltrados.map((producto) => (
-                <tr key={producto.id} className="hover:bg-red-50/70 transition-colors">
-                  <td className="px-3 py-3 text-center text-sm font-bold text-red-700">
-                    #{producto.id}
-                  </td>
-                  <td className="px-3 py-3">
-                    <div className="flex items-center gap-2">
-                      <FaTag className="text-blue-400" />
-                      <span className="text-sm font-semibold text-blue-900 truncate max-w-xs">
-                        {producto.nombre}
-                      </span>
-                    </div>
-                    {producto.descripcion && (
-                      <div className="text-xs text-red-700 truncate max-w-xs">
-                        {producto.descripcion}
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="py-7 text-center text-blue-700 font-semibold">Cargando...</td>
+                </tr>
+              ) : productosFiltrados.length > 0 ? (
+                productosFiltrados.map((producto) => (
+                  <tr key={producto.id} className="hover:bg-red-50/70 transition-colors">
+                    <td className="px-3 py-3 text-center text-sm font-bold text-red-700">
+                      #{producto.id}
+                    </td>
+                    <td className="px-3 py-3">
+                      <div className="flex items-center gap-2">
+                        <FaTag className="text-blue-400" />
+                        <span className="text-sm font-semibold text-blue-900 truncate max-w-xs">
+                          {producto.nombre}
+                        </span>
                       </div>
-                    )}
-                  </td>
-                  <td className="px-3 py-3 text-center text-sm font-bold text-blue-700">
-                    S/. {producto.precio}
-                  </td>
-                  <td className="px-3 py-3 text-center">
-                    <div className="flex items-center justify-center gap-1">
-                      {producto.stock > 0 ? (
-                        <FaCheckCircle className="text-blue-700" title="En stock" />
-                      ) : (
-                        <FaTimesCircle className="text-red-400" title="Sin stock" />
+                      {producto.descripcion && (
+                        <div className="text-xs text-red-700 truncate max-w-xs">
+                          {producto.descripcion}
+                        </div>
                       )}
-                      <span className="text-sm font-semibold text-blue-900">
-                        {producto.stock || 0}
-                      </span>
+                    </td>
+                    <td className="px-3 py-3 text-center text-sm font-bold text-blue-700">
+                      S/. {producto.precio}
+                    </td>
+                    <td className="px-3 py-3 text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        {producto.stock > 0 ? (
+                          <FaCheckCircle className="text-blue-700" title="En stock" />
+                        ) : (
+                          <FaTimesCircle className="text-red-400" title="Sin stock" />
+                        )}
+                        <span className="text-sm font-semibold text-blue-900">
+                          {producto.stock || 0}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-3 py-3 text-center text-sm text-blue-600">
+                      <FaBox className="inline-block mr-1 text-red-400" />
+                      {producto.categoriaId}
+                    </td>
+                    <td className="px-3 py-3">
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => router.push(`/productos/${producto.id}/edit`)}
+                          className="text-blue-700 hover:text-red-700 hover:bg-blue-50 p-1 rounded transition-colors"
+                          title="Editar producto"
+                        >
+                          <FaEdit />
+                        </button>
+                        <button
+                          onClick={() => eliminar(producto.id)}
+                          className="text-red-600 hover:text-red-800 hover:bg-red-50 p-1 rounded transition-colors"
+                          title="Eliminar producto"
+                        >
+                          <FaTrash />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={6} className="p-10 text-center text-blue-700">
+                    <div className="text-4xl mb-2 flex justify-center">
+                      {busqueda ? <FaSearch /> : <FaCapsules />}
                     </div>
-                  </td>
-                  <td className="px-3 py-3 text-center text-sm text-blue-600">
-                    <FaBox className="inline-block mr-1 text-red-400" />
-                    {producto.categoriaId}
-                  </td>
-                  <td className="px-3 py-3">
-                    <div className="flex items-center justify-center gap-2">
-                      <button
-                        onClick={() => router.push(`/productos/${producto.id}/editar`)}
-                        className="text-blue-700 hover:text-red-700 hover:bg-blue-50 p-1 rounded transition-colors"
-                        title="Editar producto"
-                      >
-                        <FaEdit />
-                      </button>
-                      <button
-                        onClick={() => eliminar(producto.id)}
-                        className="text-red-600 hover:text-red-800 hover:bg-red-50 p-1 rounded transition-colors"
-                        title="Eliminar producto"
-                      >
-                        <FaTrash />
-                      </button>
-                    </div>
+                    <p className="text-base font-semibold">
+                      {busqueda ? 'No se encontraron productos' : 'No hay productos registrados'}
+                    </p>
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
-        {productosFiltrados.length === 0 && (
-          <div className="p-10 text-center text-blue-700">
-            <div className="text-4xl mb-2 flex justify-center">
-              {busqueda ? <FaSearch /> : <FaCapsules />}
-            </div>
-            <p className="text-base font-semibold">
-              {busqueda ? 'No se encontraron productos' : 'No hay productos registrados'}
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );

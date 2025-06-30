@@ -7,13 +7,16 @@ import { FaFolderOpen, FaPlus, FaEdit, FaTrash, FaSearch } from 'react-icons/fa'
 export default function CategoriasPage() {
   const [categorias, setCategorias] = useState([]);
   const [busqueda, setBusqueda] = useState('');
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => { cargar(); }, []);
 
   const cargar = async () => {
+    setLoading(true);
     const data = await getCategorias();
     setCategorias(data);
+    setLoading(false);
   };
 
   const eliminar = async (id) => {
@@ -62,7 +65,7 @@ export default function CategoriasPage() {
             />
           </div>
         </div>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto min-h-[120px]">
           <table className="min-w-full">
             <thead className="bg-blue-50 border-b">
               <tr>
@@ -72,47 +75,54 @@ export default function CategoriasPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-blue-50">
-              {categoriasFiltradas.map((categoria) => (
-                <tr key={categoria.id} className="hover:bg-red-50/70 transition-colors">
-                  <td className="px-3 py-3 text-center text-sm font-bold text-red-700">
-                    #{categoria.id}
-                  </td>
-                  <td className="px-3 py-3">
-                    <span className="text-sm font-semibold text-blue-900">{categoria.nombre}</span>
-                  </td>
-                  <td className="px-3 py-3">
-                    <div className="flex items-center justify-center gap-2">
-                      <button
-                        onClick={() => router.push(`/categorias/${categoria.id}/editar`)}
-                        className="text-blue-700 hover:text-red-700 hover:bg-blue-50 p-2 rounded transition-colors"
-                        title="Editar categoría"
-                      >
-                        <FaEdit />
-                      </button>
-                      <button
-                        onClick={() => eliminar(categoria.id)}
-                        className="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded transition-colors"
-                        title="Eliminar categoría"
-                      >
-                        <FaTrash />
-                      </button>
+              {loading ? (
+                <tr>
+                  <td colSpan={3} className="py-6 text-center text-blue-700 font-semibold">Cargando...</td>
+                </tr>
+              ) : categoriasFiltradas.length > 0 ? (
+                categoriasFiltradas.map((categoria) => (
+                  <tr key={categoria.id} className="hover:bg-red-50/70 transition-colors">
+                    <td className="px-3 py-3 text-center text-sm font-bold text-red-700">
+                      #{categoria.id}
+                    </td>
+                    <td className="px-3 py-3">
+                      <span className="text-sm font-semibold text-blue-900">{categoria.nombre}</span>
+                    </td>
+                    <td className="px-3 py-3">
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => router.push(`/categorias/${categoria.id}/edit`)}
+                          className="text-blue-700 hover:text-red-700 hover:bg-blue-50 p-2 rounded transition-colors"
+                          title="Editar categoría"
+                        >
+                          <FaEdit />
+                        </button>
+                        <button
+                          onClick={() => eliminar(categoria.id)}
+                          className="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded transition-colors"
+                          title="Eliminar categoría"
+                        >
+                          <FaTrash />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={3} className="p-8 text-center text-blue-700">
+                    <div className="text-4xl mb-2 flex justify-center">
+                      {busqueda ? <FaSearch /> : <FaFolderOpen />}
                     </div>
+                    <p className="text-base font-medium">
+                      {busqueda ? 'No se encontraron categorías' : 'No hay categorías registradas'}
+                    </p>
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
-        {categoriasFiltradas.length === 0 && (
-          <div className="p-8 text-center text-blue-700">
-            <div className="text-4xl mb-2 flex justify-center">
-              {busqueda ? <FaSearch /> : <FaFolderOpen />}
-            </div>
-            <p className="text-base font-medium">
-              {busqueda ? 'No se encontraron categorías' : 'No hay categorías registradas'}
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );

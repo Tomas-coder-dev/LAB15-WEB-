@@ -6,12 +6,26 @@ import { FaCapsules, FaTag, FaDollarSign, FaBoxes } from 'react-icons/fa';
 
 export default function NuevoProducto() {
   const [producto, setProducto] = useState({ nombre: '', precio: '', stock: '', categoriaId: '' });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await crearProducto(producto);
-    router.push('/productos');
+    setError('');
+    // Validaciones básicas
+    if (!producto.nombre || !producto.precio || !producto.stock || !producto.categoriaId) {
+      setError('Todos los campos son obligatorios');
+      return;
+    }
+    setLoading(true);
+    try {
+      await crearProducto(producto);
+      router.push('/productos');
+    } catch (err) {
+      setError('Error al guardar producto. Verifica los datos o conexión.');
+      setLoading(false);
+    }
   };
 
   return (
@@ -33,6 +47,11 @@ export default function NuevoProducto() {
         </p>
       </div>
       <form onSubmit={handleSubmit} className="space-y-6">
+        {error && (
+          <div className="text-red-600 bg-red-50 border border-red-200 rounded p-2 text-center text-sm">
+            {error}
+          </div>
+        )}
         <FormField
           label="Nombre del Producto"
           icon={<FaTag className="text-red-500" />}
@@ -77,14 +96,16 @@ export default function NuevoProducto() {
             type="button"
             onClick={() => router.push('/productos')}
             className="px-4 py-2 border border-blue-200 rounded-lg text-blue-700 hover:bg-blue-50 transition-colors"
+            disabled={loading}
           >
             Cancelar
           </button>
           <button
             type="submit"
             className="px-6 py-2 bg-gradient-to-r from-red-700 via-blue-700 to-red-600 text-white rounded-lg shadow-md hover:from-red-800 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transition-colors border-2 border-blue-800"
+            disabled={loading}
           >
-            Guardar Producto
+            {loading ? 'Guardando...' : 'Guardar Producto'}
           </button>
         </div>
       </form>
