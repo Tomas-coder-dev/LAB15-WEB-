@@ -1,4 +1,4 @@
-const BASE_URL = procces.env.API_URL;
+const BASE_URL = process.env.API_URL;
 
 // PRODUCTOS
 export async function getProductos() {
@@ -41,7 +41,6 @@ export async function getCategorias() {
   const res = await fetch(`${BASE_URL}/categorias`);
   return res.json();
 }
-
 
 export async function getCategoria(id) {
   const res = await fetch(`${BASE_URL}/categorias/${id}`);
